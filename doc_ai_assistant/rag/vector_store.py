@@ -4,10 +4,7 @@ from sentence_transformers import SentenceTransformer
 
 class FAISSVectorStore:
     def __init__(self, dim: int = 384):
-        """
-        dim = embedding size
-        all-MiniLM-L6-v2 → 384
-        """
+        
         self.model = SentenceTransformer("all-MiniLM-L6-v2")
         self.index = faiss.IndexFlatL2(dim)
         self.text_chunks = []
