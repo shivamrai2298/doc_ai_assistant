@@ -1,6 +1,6 @@
 from app.ingestion.pdf_loader import extract_text
 from app.ingestion.chunking import chunk_text
-from app.rag.embeddings import EmbeddingModel
+from rag.embeddings import EmbeddingModel
 
 embedder = EmbeddingModel()
 
