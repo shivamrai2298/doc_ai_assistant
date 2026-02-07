@@ -1,26 +1,19 @@
 import faiss
 import numpy as np
-from sentence_transformers import SentenceTransformer
 
 class FAISSVectorStore:
-    def __init__(self, dim: int = 384):
-        
-        self.model = SentenceTransformer("all-MiniLM-L6-v2")
-        self.index = faiss.IndexFlatL2(dim)
+    def __init__(self, embedding_dim: int):
+        self.index = faiss.IndexFlatL2(embedding_dim)
         self.text_chunks = []
 
-    def add_texts(self, texts: list[str]):
-        embeddings = self.model.encode(texts)
+    def add(self, embeddings, chunks):
         embeddings = np.array(embeddings).astype("float32")
-
         self.index.add(embeddings)
-        self.text_chunks.extend(texts)
+        self.text_chunks.extend(chunks)
 
-    def similarity_search(self, query: str, k: int = 5):
-        query_embedding = self.model.encode([query])
-        query_embedding = np.array(query_embedding).astype("float32")
-
-        distances, indices = self.index.search(query_embedding, k)
+    def search(self, query_embedding, top_k=5):
+        query_embedding = np.array([query_embedding]).astype("float32")
+        distances, indices = self.index.search(query_embedding, top_k)
 
         results = []
         for idx in indices[0]:
@@ -28,4 +21,3 @@ class FAISSVectorStore:
                 results.append(self.text_chunks[idx])
 
         return results
-
