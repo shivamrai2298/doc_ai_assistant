@@ -1,23 +1,30 @@
 import faiss
-import numpy as np
+import pickle
+import os
 
-class FAISSVectorStore:
-    def __init__(self, embedding_dim: int):
-        self.index = faiss.IndexFlatL2(embedding_dim)
-        self.text_chunks = []
+class FaissVectorStore:
+    def __init__(self, dim, index_path="data/index.faiss", text_path="data/texts.pkl"):
+        self.dim = dim
+        self.index_path = index_path
+        self.text_path = text_path
+
+        if os.path.exists(index_path):
+            self.index = faiss.read_index(index_path)
+            with open(text_path, "rb") as f:
+                self.texts = pickle.load(f)
+        else:
+            self.index = faiss.IndexFlatL2(dim)
+            self.texts = []
 
     def add(self, embeddings, chunks):
-        embeddings = np.array(embeddings).astype("float32")
         self.index.add(embeddings)
-        self.text_chunks.extend(chunks)
+        self.texts.extend(chunks)
 
-    def search(self, query_embedding, top_k=5):
-        query_embedding = np.array([query_embedding]).astype("float32")
-        distances, indices = self.index.search(query_embedding, top_k)
+    def save(self):
+        faiss.write_index(self.index, self.index_path)
+        with open(self.text_path, "wb") as f:
+            pickle.dump(self.texts, f)
 
-        results = []
-        for idx in indices[0]:
-            if idx < len(self.text_chunks):
-                results.append(self.text_chunks[idx])
-
-        return results
+    def search(self, query_embedding, k=5):
+        D, I = self.index.search(query_embedding, k)
+        return [self.texts[i] for i in I[0]]
