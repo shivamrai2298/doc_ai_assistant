@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-st.title("Doc AI Assistant")
+st.title("Doc AI App")
 
 uploaded_file = st.file_uploader("Upload PDF")
 
